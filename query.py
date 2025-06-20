@@ -16,8 +16,11 @@ def embedding_query(query: str, prompt: str):
 
 
 def table_query(table: str, prompt: str):
+    print(table, flush=True)
     if table == "rmes":
         query = "SELECT pageid, embedding <-> %s as dst FROM rmes_emb ORDER BY dst LIMIT 5"
+    elif table == "mtg":
+        query = "SELECT name, embedding <-> %s as dst FROM mtg_emb ORDER BY dst LIMIT 5"
     else:
         query = "SELECT word, embedding <-> %s as dst FROM dictionnary_emb ORDER BY dst LIMIT 5"
     return embedding_query(query, prompt)
