@@ -11,21 +11,20 @@ client = Client(host='http://ollama.ollama.svc.cluster.local:11434')
 conn = psycopg.connect(dbname="vector", autocommit=True)
 register_vector(conn)
 
-conn = duckdb.connect()
-conn.execute("ATTACH 'dbname=vector' AS vector(TYPE postgres);")
+ddb = duckdb.connect()
+ddb.execute("ATTACH 'dbname=vector' AS vector(TYPE postgres);")
 
 print("Loading data from s3 file...")
-data = conn.query("""
-    FROM 's3://gferey/mtg/cards.parquet' AS cards
-    ANTI JOIN vector.mtg_emb AS emb ON emb.uuid = cards.uuid
-    SELECT name,
-      first(uuid ORDER BY length(text) DESC, uuid) as uuid,
-      first(text ORDER BY length(text) DESC, uuid) as text
-    WHERE language = 'English'
-      AND text IS NOT NULL
-      AND length(text) > 0
-    GROUP BY name;
-      """).fetchall()
+data = ddb.query("""
+      FROM 's3://gferey/mtg/cards.parquet' AS cards
+      ANTI JOIN vector.mtg_emb AS emb ON emb.name = cards.name
+      SELECT name,
+        first(uuid ORDER BY length(text) DESC, uuid) as uuid,
+        first(text ORDER BY length(text) DESC, uuid) as text
+      WHERE language = 'English'
+        AND text IS NOT NULL
+        AND length(text) > 0
+      GROUP BY name""").fetchall()
 print(f"Done. Loaded {len(data)} cards.")
 
 pp = ProgressPrinter(size=len(data))
