@@ -16,9 +16,9 @@ for name, txt, sim in conn.execute("""
             FROM 's3://gferey/mtg/cards.parquet' AS cards
             JOIN vector.mtg_emb AS emb ON emb.uuid = cards.uuid
             SELECT
-            cards.name,
-            cards.text,
-            CAST(emb.embedding as FLOAT[1024]) <-> embed($q) AS dst
+              cards.name,
+              cards.text,
+              CAST(emb.embedding as FLOAT[1024]) <-> embed($q) AS dst
             ORDER BY dst LIMIT 5
         """,
         {'q': sys.argv[1]}).fetchall():
