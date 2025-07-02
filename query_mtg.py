@@ -1,12 +1,14 @@
 from ollama import Client
 import numpy as np
 import sys
+import os
 import duckdb
 from duckdb.typing import VARCHAR
 
 """
+LLM_TOKEN="get token from OpenWebUI service"
 PROMPT="destroy a creature and draw cards"
-EMB=`curl -s 'http://ollama.ollama:11434/api/embed' -X POST -d "{\"model\":\"bge-m3:latest\",\"input\":\"${PROMPT}\"}" | jq .embeddings[0]`
+EMB=`curl -s 'https://llm.lab.sspcloud.fr/ollama/api/embed' -X POST -H "Authorization: Bearer ${LLM_TOKEN}" -H "Content-Type: application/json" -d "{\"model\":\"bge-m3:latest\",\"input\":\"${PROMPT}\"}" | jq .embeddings[0]`
 duckdb -c ".mode column" -c " \
   ATTACH 'host=postgresql-475245.user-gferey dbname=vector user=mtg password=mtg' AS vector(TYPE postgres); \
   FROM 's3://gferey/mtg/cards.parquet' AS cards \
@@ -19,7 +21,12 @@ duckdb -c ".mode column" -c " \
   LIMIT 10"
 """
 
-client = Client(host='http://ollama.ollama.svc.cluster.local:11434')
+client = Client(
+  host='https://llm.lab.sspcloud.fr/ollama',
+  headers={
+    "Authorization": f"Bearer {os.getenv('LLM_TOKEN')}"
+  }
+)
 
 conn = duckdb.connect()
 conn.create_function(
