@@ -55,7 +55,8 @@ with conn.cursor() as cur:
         CREATE TABLE IF NOT EXISTS mtg_emb (
             uuid UUID PRIMARY KEY,
             name varchar(800),
-            embedding vector({EMBEDDING_LENGTH})
+            base_embedding vector({EMBEDDING_LENGTH}),
+            full_embedding vector({EMBEDDING_LENGTH})
         );
         """)
     # Grant rights
